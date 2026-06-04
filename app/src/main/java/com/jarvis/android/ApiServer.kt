@@ -32,16 +32,32 @@ class ApiServer : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        // startForeground PRIMERO antes de cualquier otra cosa
         startForeground(1, buildNotification())
-        startServer()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Iniciar servidor después de startForeground
+        if (serverJob == null || !serverJob!!.isActive) {
+            startServer()
+        }
+        return START_STICKY
     }
 
     private fun startServer() {
         serverJob = scope.launch {
-            val server = ServerSocket(PORT)
-            while (isActive) {
-                val client = server.accept()
-                launch { handleClient(client) }
+            try {
+                val server = ServerSocket(PORT)
+                while (isActive) {
+                    try {
+                        val client = server.accept()
+                        launch { handleClient(client) }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -51,13 +67,12 @@ class ApiServer : Service() {
             val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
             val writer = PrintWriter(socket.getOutputStream(), true)
 
-            // Leer request HTTP
             val requestLine = reader.readLine() ?: return
             val parts = requestLine.split(" ")
+            if (parts.size < 2) return
             val method = parts[0]
             val path = parts[1]
 
-            // Leer headers
             var contentLength = 0
             var line = reader.readLine()
             while (line != null && line.isNotEmpty()) {
@@ -67,7 +82,6 @@ class ApiServer : Service() {
                 line = reader.readLine()
             }
 
-            // Leer body si existe
             val body = if (contentLength > 0) {
                 val chars = CharArray(contentLength)
                 reader.read(chars)
@@ -87,27 +101,19 @@ class ApiServer : Service() {
     private fun route(method: String, path: String, body: String): JSONObject {
         val acc = JarvisAccessibilityService.instance
         return when {
-
-            // GET /screen — lee pantalla completa
             method == "GET" && path == "/screen" -> {
                 acc?.getScreenContent() ?: JSONObject().put("error", "accessibility_not_enabled")
             }
-
-            // POST /tap — toca coordenadas {"x": 500, "y": 800}
             method == "POST" && path == "/tap" -> {
                 val json = JSONObject(body)
                 acc?.tap(json.getDouble("x").toFloat(), json.getDouble("y").toFloat())
                 JSONObject().put("ok", true)
             }
-
-            // POST /tap_text — toca por texto {"text": "Borrar caché"}
             method == "POST" && path == "/tap_text" -> {
                 val json = JSONObject(body)
                 val found = acc?.tapByText(json.getString("text")) ?: false
                 JSONObject().put("ok", found)
             }
-
-            // POST /swipe — {"x1":100,"y1":800,"x2":100,"y2":200}
             method == "POST" && path == "/swipe" -> {
                 val json = JSONObject(body)
                 acc?.swipe(
@@ -118,15 +124,11 @@ class ApiServer : Service() {
                 )
                 JSONObject().put("ok", true)
             }
-
-            // POST /type — escribe texto {"text": "Hola mundo"}
             method == "POST" && path == "/type" -> {
                 val json = JSONObject(body)
                 acc?.typeText(json.getString("text"))
                 JSONObject().put("ok", true)
             }
-
-            // POST /key — botones globales {"key": "back|home|recents"}
             method == "POST" && path == "/key" -> {
                 val json = JSONObject(body)
                 when (json.getString("key")) {
@@ -136,20 +138,15 @@ class ApiServer : Service() {
                 }
                 JSONObject().put("ok", true)
             }
-
-            // GET /sms — cola de SMS recibidos
             method == "GET" && path == "/sms" -> {
                 val result = JSONObject()
                 result.put("messages", smsQueue.toList())
                 smsQueue.clear()
                 result
             }
-
-            // GET /ping — health check
             method == "GET" && path == "/ping" -> {
-                JSONObject().put("status", "alive")
+                JSONObject().put("status", "alive").put("port", PORT)
             }
-
             else -> JSONObject().put("error", "unknown_route")
         }
     }
@@ -170,11 +167,12 @@ class ApiServer : Service() {
             channelId, "Jarvis Service",
             NotificationManager.IMPORTANCE_LOW
         )
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        getSystemService(NotificationManager::class.java)
+            .createNotificationChannel(channel)
 
         return Notification.Builder(this, channelId)
             .setContentTitle("Jarvis activo")
-            .setContentText("Servidor escuchando en puerto $PORT")
+            .setContentText("Servidor en puerto $PORT")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .build()
     }
