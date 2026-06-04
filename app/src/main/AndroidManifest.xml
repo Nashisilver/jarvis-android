@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permisos sensibles -->
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
@@ -22,11 +22,10 @@
 
     <application
         android:label="Jarvis"
-        android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.AppCompat.DayNight"
-        android:allowBackup="true">
+        android:allowBackup="true"
+        tools:targetApi="26">
 
-        <!-- Actividad principal -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -36,7 +35,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Servicio de Accesibilidad (las manos) -->
         <service
             android:name=".JarvisAccessibilityService"
             android:exported="true"
@@ -50,7 +48,6 @@
                 android:resource="@xml/accessibility_service_config"/>
         </service>
 
-        <!-- Receptor de SMS -->
         <receiver
             android:name=".SmsReceiver"
             android:exported="true">
@@ -59,7 +56,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Receptor de boot -->
         <receiver
             android:name=".BootReceiver"
             android:exported="true">
