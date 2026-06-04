@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.graphics.Rect
+import android.os.Bundle
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import org.json.JSONArray
@@ -23,7 +24,6 @@ class JarvisAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
-    // Obtener todo el texto visible en pantalla
     fun getScreenContent(): JSONObject {
         val result = JSONObject()
         val elements = JSONArray()
@@ -55,7 +55,6 @@ class JarvisAccessibilityService : AccessibilityService() {
         return result
     }
 
-    // Tap en coordenadas
     fun tap(x: Float, y: Float) {
         val path = Path().apply { moveTo(x, y) }
         val gesture = GestureDescription.Builder()
@@ -64,7 +63,6 @@ class JarvisAccessibilityService : AccessibilityService() {
         dispatchGesture(gesture, null, null)
     }
 
-    // Tap por texto visible
     fun tapByText(text: String): Boolean {
         val root = rootInActiveWindow ?: return false
         val nodes = root.findAccessibilityNodeInfosByText(text)
@@ -75,7 +73,6 @@ class JarvisAccessibilityService : AccessibilityService() {
         return true
     }
 
-    // Swipe
     fun swipe(x1: Float, y1: Float, x2: Float, y2: Float, duration: Long = 300) {
         val path = Path().apply {
             moveTo(x1, y1)
@@ -87,7 +84,6 @@ class JarvisAccessibilityService : AccessibilityService() {
         dispatchGesture(gesture, null, null)
     }
 
-    // Escribir texto en campo activo
     fun typeText(text: String) {
         val node = findFocusedInput() ?: return
         val args = Bundle()
@@ -102,12 +98,7 @@ class JarvisAccessibilityService : AccessibilityService() {
         return root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
     }
 
-    // Botón atrás
     fun pressBack() = performGlobalAction(GLOBAL_ACTION_BACK)
-
-    // Home
     fun pressHome() = performGlobalAction(GLOBAL_ACTION_HOME)
-
-    // Recientes
     fun pressRecents() = performGlobalAction(GLOBAL_ACTION_RECENTS)
 }
