@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Jarvis</string>
+    <string name="accessibility_description">Jarvis necesita accesibilidad para controlar la pantalla y realizar tareas automáticas</string>
+</resources>
