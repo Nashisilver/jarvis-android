@@ -14,7 +14,7 @@ import java.net.Socket
 
 class ApiServer : Service() {
 
-    private val PORT = 8080
+    private val PORT = 38080
     private var serverJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
