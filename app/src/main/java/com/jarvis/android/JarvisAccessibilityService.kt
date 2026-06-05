@@ -49,9 +49,10 @@ class JarvisAccessibilityService : AccessibilityService() {
             for (i in 0 until node.childCount) traverse(node.getChild(i))
         }
 
-        traverse(root)
+        try { traverse(root) } catch (e: Exception) { }
         result.put("elements", elements)
-        result.put("package", root.packageName ?: "")
+        result.put("package", root.packageName?.toString() ?: "unknown")
+        result.put("ok", true)
         return result
     }
 
