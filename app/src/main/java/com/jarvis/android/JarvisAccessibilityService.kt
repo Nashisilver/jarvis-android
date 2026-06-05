@@ -50,10 +50,9 @@ class JarvisAccessibilityService : AccessibilityService() {
         }
 
         try { traverse(root) } catch (e: Exception) { }
-        result.put("elements", elements)
-        result.put("package", root.packageName?.toString() ?: "unknown")
-        result.put("ok", true)
-        return result
+         result.put("elements", elements)
+         result.put("pkg", root.packageName?.toString() ?: "unknown")
+         return result       
     }
 
     fun tap(x: Float, y: Float) {
