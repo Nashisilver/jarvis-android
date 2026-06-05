@@ -157,6 +157,7 @@ private fun sendResponse(socket: Socket, json: JSONObject) {
     out.write(header.toByteArray(Charsets.UTF_8))
     out.write(body)
     out.flush()
+    out.close()
 
     }
 
