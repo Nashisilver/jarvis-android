@@ -146,6 +146,8 @@ class ApiServer : Service() {
             method == "GET" && path == "/ping" -> {
                 JSONObject().put("status", "alive").put("port", PORT)
             }
+            method == "GET" && path == "/test" ->
+                JSONObject().put("status", "ok").put("pkg", "com.termux").put("end", true)
             else -> JSONObject().put("error", "unknown_route")
         }
     }
