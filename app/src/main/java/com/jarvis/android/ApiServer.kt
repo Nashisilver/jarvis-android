@@ -144,7 +144,7 @@ class ApiServer : Service() {
                 result
             }
             method == "GET" && path == "/ping" -> {
-                JSONObject().put("status", "alive").put("port", PORT)
+                JSONObject().put("status", "alive").put("port", PORT).put("v", "18")
             }
             method == "GET" && path == "/test" ->
                 JSONObject().put("status", "ok").put("pkg", "com.termux").put("end", true)
