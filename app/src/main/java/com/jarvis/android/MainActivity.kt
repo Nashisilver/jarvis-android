@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val title = TextView(this).apply {
-            text = "🤖 Jarvis"
+            text = "🤖 Akira"
             textSize = 32f
             setPadding(0, 0, 0, 40)
         }

@@ -171,7 +171,7 @@ class ApiServer : Service() {
             .createNotificationChannel(channel)
 
         return Notification.Builder(this, channelId)
-            .setContentTitle("Jarvis activo")
+            .setContentTitle("Akira activa")
             .setContentText("Servidor en puerto $PORT")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .build()
