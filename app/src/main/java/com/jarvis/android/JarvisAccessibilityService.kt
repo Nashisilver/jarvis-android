@@ -25,34 +25,32 @@ class JarvisAccessibilityService : AccessibilityService() {
     override fun onInterrupt() {}
 
     fun getScreenContent(): JSONObject {
-        val result = JSONObject()
-        val elements = JSONArray()
-        val root = rootInActiveWindow ?: return result.put("error", "no_window")
-
+    return try {
+        val root = rootInActiveWindow ?: return JSONObject("{\"elements\":[],\"pkg\":\"none\"}")
+        val sb = StringBuilder("[")
+        var first = true
         fun traverse(node: AccessibilityNodeInfo?) {
             node ?: return
-            val text = node.text?.toString() ?: ""
-            val desc = node.contentDescription?.toString() ?: ""
+            val text = node.text?.toString()?.replace("\"","'") ?: ""
+            val desc = node.contentDescription?.toString()?.replace("\"","'") ?: ""
             val bounds = Rect()
             node.getBoundsInScreen(bounds)
-
             if (text.isNotEmpty() || desc.isNotEmpty()) {
-                val el = JSONObject()
-                el.put("text", text)
-                el.put("desc", desc)
-                el.put("clickable", node.isClickable)
-                el.put("x", bounds.centerX())
-                el.put("y", bounds.centerY())
-                el.put("id", node.viewIdResourceName ?: "")
-                elements.put(el)
+                if (!first) sb.append(",")
+                sb.append("{\"text\":\"$text\",\"desc\":\"$desc\",\"clickable\":${node.isClickable},\"x\":${bounds.centerX()},\"y\":${bounds.centerY()}}")
+                first = false
             }
             for (i in 0 until node.childCount) traverse(node.getChild(i))
         }
+        traverse(root)
+        sb.append("]")
+        val pkg = root.packageName?.toString()?.replace("\"","") ?: "unknown"
+        JSONObject("{\"elements\":$sb,\"pkg\":\"$pkg\"}")
+    } catch (e: Exception) {
+        JSONObject("{\"elements\":[],\"pkg\":\"error\"}")
+    }
+}
 
-        try { traverse(root) } catch (e: Exception) { }
-         result.put("elements", elements)
-         result.put("pkg", root.packageName?.toString() ?: "unknown")
-         return result       
     }
 
     fun tap(x: Float, y: Float) {
