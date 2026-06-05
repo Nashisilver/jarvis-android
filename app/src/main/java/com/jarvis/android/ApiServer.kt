@@ -65,7 +65,6 @@ class ApiServer : Service() {
     private fun handleClient(socket: Socket) {
         try {
             val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
-            val writer = PrintWriter(socket.getOutputStream(), true)
 
             val requestLine = reader.readLine() ?: return
             val parts = requestLine.split(" ")
@@ -89,7 +88,7 @@ class ApiServer : Service() {
             } else ""
 
             val response = route(method, path, body)
-            sendResponse(writer, response)
+            sendResponse(socket, response)
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -151,14 +150,14 @@ class ApiServer : Service() {
         }
     }
 
-    private fun sendResponse(writer: PrintWriter, json: JSONObject) {
-        val body = json.toString()
-        writer.println("HTTP/1.1 200 OK")
-        writer.println("Content-Type: application/json; charset=utf-8")
-        writer.println("Content-Length: ${body.toByteArray(Charsets.UTF_8).size}")
-        writer.println("Connection: close")
-        writer.println()
-        writer.println(body)
+private fun sendResponse(socket: Socket, json: JSONObject) {
+    val body = json.toString().toByteArray(Charsets.UTF_8)
+    val header = "HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: ${body.size}\r\nConnection: close\r\n\r\n"
+    val out = socket.getOutputStream()
+    out.write(header.toByteArray(Charsets.UTF_8))
+    out.write(body)
+    out.flush()
+
     }
 
     private fun buildNotification(): Notification {
