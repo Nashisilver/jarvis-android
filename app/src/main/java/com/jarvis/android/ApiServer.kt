@@ -154,8 +154,8 @@ class ApiServer : Service() {
     private fun sendResponse(writer: PrintWriter, json: JSONObject) {
         val body = json.toString()
         writer.println("HTTP/1.1 200 OK")
-        writer.println("Content-Type: application/json")
-        writer.println("Content-Length: ${body.length}")
+        writer.println("Content-Type: application/json; charset=utf-8")
+        writer.println("Content-Length: ${body.toByteArray(Charsets.UTF_8).size}")
         writer.println("Connection: close")
         writer.println()
         writer.println(body)
